@@ -1,0 +1,44 @@
+{
+  "name": "Aggregate",
+  "deps": [
+    {
+      "name": "w.Comp1",
+      "deps": [
+        {
+          "name": "components.NewComp1",
+          "deps": [
+            {
+              "name": "components.NewComp2",
+              "deps": [
+                {
+                  "name": "\"two\""
+                }
+              ]
+            },
+            {
+              "name": "components.NewComp3",
+              "deps": [
+                {
+                  "name": "\"three\""
+                }
+              ]
+            },
+            {
+              "name": "components.NewComp4",
+              "deps": [
+                {
+                  "name": "components.NewComp2",
+                  "deps": [
+                    {
+                      "name": "\"two\""
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

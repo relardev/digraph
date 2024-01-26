@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title> Component Visualization</title>
+		<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+<div class="h-screen flex flex-col lg:flex-row bg-gray-900">
+	<div class="lg:w-1/3 p-4 flex flex-col h-full border-r border-gray-700">
+		<h2 class="text-2xl font-bold mb-4 text-green-400">Component Exploration Tool</h2>
+		<div class="flex-1 overflow-auto">
+			<h3 class="text-xl font-semibold mb-2 text-blue-400">Node Controls</h3>
+			<button 
+			id="focus-node"
+			class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 w-full mb-2 text-gray-300 border-gray-500 cursor-pointer"
+			onclick="focusNode()"
+			>
+				Focus
+			</button>
+			<button 
+			id="unfocus-node"
+			class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 w-full mb-2 text-gray-300 border-gray-500"
+			onclick="filterNode()"
+			>
+				Filter
+			</button>
+			<button
+			id="hide-node"
+			class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 w-full mb-2 text-gray-300 border-gray-500"
+			onclick="hideNode()"
+			>
+				Hide
+			</button>
+			<button
+			id="hide-children"
+			class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 w-full mb-2 text-gray-300 border-gray-500"
+			onclick="hideChildrenOfNode()"
+			>
+				Hide Children
+			</button>
+
+			<button
+			id="go-to-repo"
+			class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 w-full mb-2 text-gray-300 border-gray-500"
+			onclick="gotoRepo()"
+			>
+				Go to repo
+			</button>
+
+			<script>
+				function gotoRepo() {
+					if (!global.focused) {
+						return;
+					}
+					const url = global.focused.url;
+					if (!url) {
+						return;
+					}
+					window.open(url, '_blank');
+				}
+			</script>
+
+			<button
+			id="copy-file-path"
+			class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 w-full mb-2 text-gray-300 border-gray-500"
+			onclick="copyFilePathToClipboard()"
+			>
+				Copy package path
+			</button>
+
+			<script>
+				function copyFilePathToClipboard() {
+					if (!global.focused) {
+						return;
+					}
+					const filePath = global.focused.file_path;
+					if (!filePath) {
+						return;
+					}
+
+					if (navigator.clipboard) {
+						navigator.clipboard.writeText(filePath);
+					} else {
+						const textArea = document.createElement('textarea');
+						textArea.value = filePath;
+						document.body.appendChild(textArea);
+						textArea.focus();
+						textArea.select();
+						try {
+							document.execCommand('copy');
+						} catch (err) {
+							console.error('Fallback: Oops, unable to copy', err);
+						}
+						document.body.removeChild(textArea);
+					}
+				}
+			</script>
+
+			<script>
+			gotoRepoButton = document.getElementById('go-to-repo');
+			copyFilePathButton = document.getElementById('copy-file-path');
+			otherButtons = [
+				document.getElementById('focus-node'),
+				document.getElementById('unfocus-node'),
+				document.getElementById('hide-node'),
+				document.getElementById('hide-children'),
+			];
+
+			allButtons = [
+				gotoRepoButton,
+				copyFilePathButton,
+				...otherButtons,
+			];
+			</script>
+
+			<div class="mb-2">
+				<h4 class="text-lg font-semibold mb-2 text-yellow-500">Filters</h4>
+				<ul id="filtered-list" class="text-gray-300 z-10 bg-gray-800 border border-gray-700 rounded-md shadow-lg py-1 mt-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm max-h-60 hidden">
+				</ul>
+
+				<input
+					id="filter-pattern"
+					type="text"
+					class="flex h-10 rounded-md px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full appearance-none pl-8 text-gray-300 bg-gray-800 border border-gray-700"
+					placeholder="Pattern..."	
+				/>
+
+				<script>
+					document.getElementById('filter-pattern').addEventListener('keydown', function(event) {
+						if (event.key === 'Enter' || event.keyCode === 13) {
+							// Perform the action you want when Enter is pressed
+							handleFilterPattern();
+						}
+					});
+
+					function handleFilterPattern() {
+						element = document.getElementById('filter-pattern');
+						var userInput = element.value;
+						filterPattern(userInput);
+						element.value = '';
+					}
+				</script>
+			</div>
+
+			<div id="hidden-container" class="hidden">
+			<h3 class="text-xl font-semibold mb-2 text-blue-400">Hidden</h3>
+			<ul id="hidden-list" class="text-gray-300 z-10 bg-gray-800 border border-gray-700 rounded-md shadow-lg py-1 mt-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm max-h-60">
+				<li class="flex items-center justify-between px-3 py-2">
+					<span class="text-sm font-medium">No nodes hidden</span>
+			</ul>
+			</div>
+
+
+			<h3 class="text-xl font-semibold mb-2 text-blue-400">Roots</h3>
+			<div class="mb-2">
+				<button
+					id="toggle-roots-list"
+					type="button"
+					role="combobox"
+					aria-controls="radix-:R3culllla:"
+					aria-expanded="false"
+					aria-autocomplete="none"
+					dir="ltr"
+					data-state="closed"
+					data-placeholder=""
+					class="text-gray-300 flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+					onclick="toggleOptionsList()"
+				>
+					<span style="pointer-events:none">Select a root</span>
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						width="24"
+						height="24"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						class="h-4 w-4 opacity-50"
+						aria-hidden="true"
+					>
+						<path d="m6 9 6 6 6-6"></path>
+					</svg>
+				</button>
+
+				<ul 
+				id="options-list" 
+				role="listbox" 
+				aria-hidden="true" 
+				style="display: none;"
+				class="text-gray-300 z-10 bg-gray-800 border border-gray-700 rounded-md shadow-lg py-1 mt-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm max-h-60"
+				>
+				</ul>
+			 <script>
+				function toggleOptionsList() {
+					var optionsList = document.getElementById('options-list');
+					optionsList.style.display = (optionsList.style.display === 'none') ? 'block' : 'none';
+					var isExpanded = optionsList.style.display === 'block';
+					document.querySelector('button[id="toggle-roots-list"]').setAttribute('aria-expanded', isExpanded);
+					optionsList.setAttribute('aria-hidden', !isExpanded);
+				}
+
+				function selectOption(option) {
+					document.querySelector('button[id="toggle-roots-list"]').textContent = option;
+					toggleOptionsList();
+					displayGraph(option)
+				}
+				</script>
+				<button 
+				class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 w-full mt-2 text-gray-300 border-gray-500"
+				onclick="displayGraph('root')"
+				>
+					Show All Roots
+				</button>
+			</div>
+		</div>
+		<div class="mt-4">
+			<h3 class="text-xl font-semibold mb-2 text-blue-400">Search</h3>
+			<div class="relative">
+				<svg
+					xmlns="http://www.w3.org/2000/svg"
+					width="24"
+					height="24"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					class=" absolute left-2.5 top-2.5 h-4 w-4 text-gray-500"
+				>
+					<circle cx="11" cy="11" r="8"></circle>
+					<path d="m21 21-4.3-4.3"></path>
+				</svg>
+				<div class="search-container relative">
+						<input
+								id="searchBox"
+								type="search"
+								class="flex h-10 rounded-md px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full appearance-none pl-8 text-gray-300 bg-gray-800 border border-gray-700"
+								placeholder="Search..."
+						/>
+						<div class="search-counter absolute right-2 top-2 text-gray-300">
+							<span id="resultCount"></span>
+						</div>
+				</div>		
+				<button
+					type="button"
+					class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 text-gray-300 border-gray-500"
+					onclick="previousSearchResult()"
+				> 
+					Previous
+				</button>
+				<button
+					type="button"
+					class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 text-gray-300 border-gray-500"
+					onclick="nextSearchResult()"
+				>
+					Next
+				</button>
+
+				<script>
+				    var searchBox = document.getElementById('searchBox');
+
+    searchBox.addEventListener('input', function() {
+				clearTimeout(searchBox.timeout);
+							searchBox.timeout = setTimeout(() =>{
+								searchFunction(searchBox.value)
+							}, 300);
+
+    });
+
+				</script>
+			</div>
+		</div>
+	</div>
+	<div class="flex-1 p-4 relative bg-gray-800">
+		<h3 class="text-xl font-semibold mb-2 text-blue-400">Visualization</h3>
+		<div class="w-full h-full rounded-lg border border-gray-700 border-dashed" id="holder">
+		<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/jointjs/3.7.5/joint.css" />
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.4/jquery.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/backbone.js/1.4.1/backbone.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jointjs/3.7.5/joint.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/elkjs@0.8.2/lib/elk.bundled.min.js "></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/jointjs/3.7.7/vectorizer.min.js"></script>
+		<script src="https://cdn.rawgit.com/ariutta/svg-pan-zoom/master/dist/svg-pan-zoom.min.js"></script>
+
+		<script>
+{{MD5}}
+const baseGraph = {{GRAPH_DATA}}
+
+var global = {
+	hidden: [],
+	matches: [],
+	currentMatch: 0,
+	baseGraph: baseGraph,
+	focused: null,
+	currentJointJSGraph: null,
+	currentGraph: baseGraph,
+	roots: [],
+	focusedView: null,
+	filtered: [],
+	searchText: null,
+}
+
+function updateUrl() {
+	const url = new URL(window.location.href);
+	const params = new URLSearchParams(url.search);
+	if (global.hidden.length === 0) {
+		params.delete('hidden');
+	} else {
+		params.set('hidden', global.hidden.join(','));
+	}
+	if (global.filtered.length === 0) {
+		params.delete('filtered');
+	} else {
+		params.set('filtered', JSON.stringify(global.filtered));
+	}
+	if (!global.focused) {
+		params.delete('focused');
+	} else {
+		params.set('focused', global.focused.name);
+	}
+	if (global.focusedView) {
+		params.set('view', global.focusedView);
+	} else {
+		params.delete('view');
+	}
+	if (global.searchText) {
+		params.set('search', global.searchText);
+	} else {
+		params.delete('search');
+	}
+	url.search = params.toString();
+	window.history.replaceState({}, '', url.toString());
+}
+
+function loadGlobalFromUrl() {
+	const url = new URL(window.location.href);
+	const params = new URLSearchParams(url.search);
+	const hidden = params.get('hidden');
+	if (hidden) {
+		global.hidden = hidden.split(',');
+	}
+	const filtered = params.get('filtered');
+	if (filtered) {
+		global.filtered = JSON.parse(filtered);
+	}
+	const focused = params.get('focused');
+	if (focused) {
+		global.focused = { name: focused };
+	}
+	const view = params.get('view');
+	if (view) {
+		global.focusedView = view;
+	}
+	const search = params.get('search');
+	if (search) {
+		global.searchText = search;
+	}
+}
+
+for (let dep of global.baseGraph.deps) {
+	global.roots.push(dep.name);
+}
+
+async function renderGraph(treeGraph){
+	updateUrl();
+	global.currentGraph = treeGraph;
+	treeGraph = JSON.parse(JSON.stringify(treeGraph));
+
+	removeFromGraph(treeGraph, global.filtered);
+	hideFromGraph(treeGraph, global.hidden);
+
+	let elements = [];
+
+	let id = 1;
+
+	function getTextDimensions(text, font) {
+      // Create a temporary canvas
+      var canvas = document.createElement('canvas');
+      var context = canvas.getContext('2d');
+
+      // Set the font on the context
+      context.font = font;
+
+			//split text into lines and get the longest one
+			let lines = text.split("\n");
+			let longestLine = "";
+			for(let i = 0; i < lines.length; i++){
+				if(lines[i].length > longestLine.length){
+					longestLine = lines[i];
+				}
+			}
+      var width = context.measureText(longestLine).width;
+				
+
+      // Get the font metrics
+      var metrics = context.measureText(text);
+      var height = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
+
+      // Return the dimensions
+      return { width: width, height: height };
+    }
+
+	function fillHashes(node){
+		stringRep = JSON.stringify(node)
+		md5 = MD5(stringRep)
+		node.md5 = md5;
+		if (node.deps) {
+			node.deps.forEach(d => {
+				fillHashes(d);
+			});
+		}
+	}
+
+
+	fillHashes(treeGraph)
+
+	function fillSizes(node){
+		const text = node.name + (node.value ? `\n(${node.value})` : '')
+		// cut all lines so they are max 30 chars long
+		const lines = text.split("\n");
+		for(let i = 0; i < lines.length; i++){
+			if(lines[i].length > 30){
+				lines[i] = lines[i].substring(0, 30) + "...";
+			}
+		}
+		cut = lines.join("\n");
+		const {width, height} = getTextDimensions(cut, '14px DejaVu Sans');
+		node.width = width + 20;
+		node.height = height + 20;
+		node.label = cut
+		node.tooltip = text
+		if (node.deps) {
+			node.deps.forEach(d => {
+				fillSizes(d);
+			});
+		}
+	}
+
+	fillSizes(treeGraph)
+
+	seen = {}
+	id2node = {}
+	var graph = new joint.dia.Graph({}, { cellNamespace: namespace });
+	global.currentJointJSGraph = graph;
+	const elk = new ELK();
+
+	var g = {
+		id: "root",
+		layoutOptions: { 
+			'elk.algorithm': 'layered',
+			'elk.direction': 'DOWN',
+		},
+		children: [],
+		edges: [],
+	}
+
+	function processDependency(dep, parentID=null) {
+		seenNode = seen[dep.md5];
+		if (seenNode) {
+			if (parentID) {
+				parent = id2node[parentID];
+				if (parent) {
+					g.edges.push({ id: `${id}`, sources: [ parent.id ], targets: [ seenNode.id ] })
+				} else {
+					console.log('no parent', parentID)
+				}
+			}
+			return;
+		}
+		let myID = id;
+		id++;
+
+		dep.id = myID;
+		seen[dep.md5] = dep;
+
+		g.children.push({
+			id: myID, 
+			width: dep.width, 
+			height: dep.height,
+			label: dep.label,
+			tooltip: dep.tooltip,
+			url: dep.url,
+			file_path: dep.file_path,
+			name: dep.name,
+		})
+
+		id2node[myID] = dep;
+
+		if (parentID) {
+			parent = id2node[parentID];
+			if (parent) {
+				g.edges.push({ id: `${id}`, sources: [ parentID ], targets: [ dep.id ] })
+			} else {
+				console.log('no parent', parentID)
+			}
+		}
+
+		if (dep.deps) {
+			dep.deps.forEach(d => {
+				processDependency(d, myID);
+			});
+		}
+	}
+
+	processDependency(treeGraph);
+
+	await elk.layout(g);
+
+	function createJointGraph() {
+		id2node = {}
+
+		g.children.forEach(function(node) {
+			rect = new joint.shapes.standard.Rectangle();
+			id2node[node.id] = rect;
+			rect.myID = node.id;
+			rect.tooltip = node.tooltip;
+			rect.url = node.url;
+			rect.file_path = node.file_path;
+			rect.name = node.name;
+			rect.resize(node.width, node.height);
+			rect.position(node.x, node.y);
+			rect.attr({
+				body: {
+					fill: '#051015',
+				},
+				label: {
+					text: node.label,
+					fill: '#d1d5db',
+				}
+			});
+			rect.addTo(graph);
+		});
+
+		g.edges.forEach(function(e) {
+			points = []
+			if (e.sections) {
+				e.sections.forEach(function(s) {
+					points.push({ x: s.startPoint.x, y: s.startPoint.y });
+					if (s.bendPoints)
+						s.bendPoints.forEach(function(b) {
+							points.push({ x: b.x, y: b.y });
+						});
+					points.push({ x: s.endPoint.x, y: s.endPoint.y });
+				});
+			}
+
+			points.pop();
+
+			link = new joint.shapes.standard.Link();
+			const linkArgs =  {
+				connectionPoint: {
+					name: 'boundary',
+					args: {
+						sticky: true,
+					}
+				},
+				anchor: {
+					name: 'perpendicular',
+					args: {
+						padding: 10,
+					}
+				}
+			}
+
+			const target = id2node[e.targets[0]];
+
+			link.source(id2node[e.sources[0]], linkArgs);
+			link.target(target, linkArgs);
+			link.vertices(points);
+			link.attr('line/stroke', '#eab308');
+			link.addTo(graph);
+		});
+	}
+
+	createJointGraph();
+
+	var namespace = joint.shapes;
+
+	holder = document.getElementById('holder');
+
+	var paper = new joint.dia.Paper({
+		el: holder,
+		model: graph,
+		width: '100%',
+		height: '96%',
+		gridSize: 1,
+		cellViewNamespace: namespace,
+		//block dragging edges and nodes
+		interactive: false
+	});
+
+  // Handle mousemove event for panning
+  let isDragging = false;
+  let dragStartX, dragStartY;
+	//find svg in holder
+
+	svg = holder.querySelector('svg');
+	svg_id = svg.getAttribute('id');
+
+	panAndZoom = svgPanZoom(`#${svg_id}`)
+
+	//Enable pan when a blank area is click (held) on
+	paper.on('blank:pointerdown', function (evt, x, y) {
+		panAndZoom.enablePan();
+	});
+
+	//Disable pan when the mouse button is released
+	paper.on('cell:pointerup blank:pointerup', function(cellView, event) {
+		panAndZoom.disablePan();
+	});
+	paper.on('element:mouseenter', function(e) {
+		highlight(e.model, graph);
+		var tooltip = $('#tooltip');
+		tooltip.text(e.model.tooltip);
+		tooltip.css({
+			top: event.clientY + 10,
+			left: event.clientX + 10,
+			}).show();
+	});
+
+	// Hide tooltip on mouseout
+	paper.on('element:mouseleave', function(e) {
+		unhighlight(e.model, graph);
+		$('#tooltip').hide();
+	});
+
+	// focus node on click
+	paper.on('element:pointerclick', function(e) {
+		if (global.focused) {
+			unfocus();
+		}
+		focus(e.model);
+		updateUrl();
+	});
+
+	searchFunction(global.searchText);
+
+	if (!global.focused) {
+		return;
+	}
+	const oldName = global.focused.name;
+	elements = global.currentJointJSGraph.getElements();
+	elements.forEach(function(element) {
+		if (element.name === oldName) {
+			focus(element);
+		}
+	});
+}
+
+function matchTarget(node, target) {
+	matches = false
+	if (target.type === 'pattern') {
+		matches = node.name.includes(target.value);
+	} else if (target.type === 'node') {
+		matches = node.name === target.value;
+	} else {
+		console.log('unknown target type', target.type);
+	}
+	return matches;
+}
+
+function removeFromGraph(current, targets) {
+	if (current.deps) {
+		promotedDeps = [];
+		while (current.deps.find(d => targets.find(target => matchTarget(d, target)))) {
+			const dep = current.deps.find(d => targets.find(target => matchTarget(d, target)));
+			if (dep.deps)	promotedDeps.push(...dep.deps);
+			current.deps = current.deps.filter(d => d.name !== dep.name);
+		}
+		current.deps.push(...promotedDeps);
+		current.deps.forEach(d => removeFromGraph(d, targets));
+	}
+}
+
+function hideFromGraph(current, targets) {
+	if (current.deps) {
+		current.deps = current.deps.filter(d => !targets.find(t => d.name === t));
+		current.deps.forEach(d => hideFromGraph(d, targets));
+	}
+}
+
+  function applyGrayOut(button) {
+    button.classList.add('bg-gray-500', 'text-gray-400', 'cursor-not-allowed');
+    button.disabled = true;
+  }
+
+  function removeGrayOut(button) {
+    button.classList.remove('bg-gray-500', 'text-gray-400', 'cursor-not-allowed');
+    button.disabled = false;
+  }
+
+function focus(node) {
+	if (node.url) {
+		removeGrayOut(gotoRepoButton);
+	} else {
+		applyGrayOut(gotoRepoButton);
+	}
+
+	if (node.file_path) {
+		removeGrayOut(copyFilePathButton);
+	} else {
+		applyGrayOut(copyFilePathButton);
+	}
+
+	otherButtons.forEach(removeGrayOut);
+
+	global.focused = node;
+	node.attr({
+		body: {
+			stroke: '#F44336', // Set the border color
+		},
+	});
+}
+
+function unfocus() {
+	if (!global.focused) {
+		return;
+	}
+	if (global.focused.attr) {
+		global.focused.attr({
+			body: {
+				stroke: 'none', // Set the border color
+			},
+		});
+	}
+	global.focused = null;
+}
+
+function highlight(node, graph){
+	//highlight all edges from this node
+	graph.getConnectedLinks(node).forEach(function(link) {
+		link.attr('line/stroke', '#ffffff');
+	});
+	//highlight node
+	node.attr({
+		body: {
+			fill: '#eab308',
+		},
+		label: {
+			fill: '#000000',
+		}
+	});
+
+}
+
+function unhighlight(node, graph){
+	//unhighlight all edges from this node
+	graph.getConnectedLinks(node).forEach(function(link) {
+		link.attr('line/stroke', '#eab308');
+	});
+
+	//unhighlight node
+	node.attr({
+		body: {
+			fill: '#051015',
+		},
+		label: {
+			fill: '#d1d5db',
+		}
+	});
+
+}
+
+function displayGraph(root) {
+	global.focusedView = root;
+	if (root === 'root') {
+		renderGraph(global.baseGraph).catch(console.error);
+		return;
+	}
+	const rootGraph = global.baseGraph.deps.find(d => d.name === root);
+	renderGraph(rootGraph).catch(console.error);
+}
+
+function fillOptionsList(){
+	const optionsList = document.getElementById('options-list');
+	for(let i = 0; i < global.roots.length; i++){
+		const option = document.createElement('li');
+		option.setAttribute('role', 'option');
+		option.textContent = global.roots[i];
+		option.onclick = () => selectOption(global.roots[i]);
+		optionsList.appendChild(option);
+	}
+}
+
+fillOptionsList();
+
+function trimToUsed(current, target) {
+	if (current.name === target.name) {
+		return true;
+	}
+	if (current.deps) {
+		current.deps = current.deps.filter(d => trimToUsed(d, target));
+		if (current.deps.length === 0) {
+			return false;
+		} else {
+			return true;
+		}
+	}
+	return false;
+}
+
+
+function filterPattern(pattern) {
+	global.filtered.push({type:"pattern", value: pattern});
+	renderFiltered();
+	renderGraph(global.currentGraph).catch(console.error);
+}
+
+function filterNode() {
+	if (!global.focused) {
+		return;
+	}
+
+	global.filtered.push({type:"node", value: global.focused.name});
+	renderFiltered();
+	renderGraph(global.currentGraph).catch(console.error);
+	unfocus();
+}
+
+function unfilterNode(value) {
+	global.filtered = global.filtered.filter(n => n.value !== value);
+	renderFiltered();
+	renderGraph(global.currentGraph).catch(console.error);
+}
+
+
+function renderHidden() {
+	const hiddenList = document.getElementById('hidden-list');
+	const hiddenContainer = document.getElementById('hidden-container');
+	if (global.hidden.length === 0) {
+		hiddenContainer.style.display = 'none';
+	} else {
+		hiddenContainer.style.display = 'block';
+	}
+	hiddenList.innerHTML = '';
+	global.hidden.forEach(function(value) {
+		const li = document.createElement('li');
+		li.classList.add('flex', 'items-center', 'justify-between', 'px-3', 'py-2');
+		const span = document.createElement('span');
+		span.classList.add('text-sm', 'font-medium');
+		span.textContent = value;
+		li.appendChild(span);
+		const button = document.createElement('button');
+		button.type = 'button';
+		button.classList.add('inline-flex', 'items-center', 'justify-center', 'rounded-md', 'text-sm', 'font-medium', 'ring-offset-background', 'transition-colors', 'focus-visible:outline-none', 'focus-visible:ring-2', 'focus-visible:ring-ring', 'focus-visible:ring-offset-2', 'disabled:pointer-events-none', 'disabled:opacity-50', 'border', 'bg-background', 'hover:bg-accent', 'hover:text-accent-foreground', 'h-6', 'px-2', 'text-gray-300', 'border-gray-500');
+		button.onclick = () => unhideNode(value);
+		button.appendChild(createXSvg());
+		li.appendChild(button);
+		hiddenList.appendChild(li);
+	});
+}
+
+function unhideNode(value) {
+	global.hidden = global.hidden.filter(n => n !== value);
+	renderHidden();
+	renderGraph(global.currentGraph).catch(console.error);
+}
+
+function renderFiltered() {
+	const filteredList = document.getElementById('filtered-list');
+
+	if (global.filtered.length === 0) {
+		filteredList.style.display = 'none';
+	} else {
+		filteredList.style.display = 'block';
+	}
+
+	filteredList.innerHTML = '';
+	global.filtered.forEach(function(node) {
+		const li = document.createElement('li');
+		li.classList.add('flex', 'items-center', 'justify-between', 'px-3', 'py-2');
+
+		if (node.type === 'pattern') {
+			const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+			svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+			svg.setAttribute('width', '24');
+			svg.setAttribute('height', '24');
+			svg.setAttribute('viewBox', '0 0 24 24');
+			svg.setAttribute('fill', 'none');
+			svg.setAttribute('stroke', 'currentColor');
+			svg.setAttribute('stroke-width', '2');
+			svg.setAttribute('stroke-linecap', 'round');
+			svg.setAttribute('stroke-linejoin', 'round');
+			svg.classList.add('h-4', 'w-4');
+			svg.setAttribute('aria-hidden', 'true');
+			const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+			path.setAttributeNS(null, "d", "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 16h-2v-2h2zm0-4h-2V7h2zm4-8h-8v2h2v6h-2v2h8v-2h-2v-6h2v-2z");
+			svg.appendChild(path);
+			li.appendChild(svg);
+		} else if (node.type === 'node') {
+			const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+			svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+			svg.setAttribute('width', '24');
+			svg.setAttribute('height', '24');
+			svg.setAttribute('viewBox', '0 0 24 24');
+			svg.setAttribute('fill', 'none');
+			svg.setAttribute('stroke', 'currentColor');
+			svg.setAttribute('stroke-width', '2');
+			svg.setAttribute('stroke-linecap', 'round');
+			svg.setAttribute('stroke-linejoin', 'round');
+			svg.classList.add('h-4', 'w-4');
+			svg.setAttribute('aria-hidden', 'true');
+			const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+			path.setAttributeNS(null, "d", "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-1.69 0-3.26-.45-4.62-1.24.74-.89 1.89-2.55 2.33-5.18.09-.43.45-.76.89-.76.57 0 1.03.46 1.03 1.03 0 .22-.07.42-.18.59-.4.79-1.39 1.41-2.55 1.41-1.24 0-2.26-1.01-2.26-2.26 0-1.24 1.01-2.26 2.26-2.26s2.26 1.01 2.26 2.26c0 .57-.22 1.14-.6 1.56-.25.27-.56.46-.89.54 1.53.09 2.76 1.32 2.76 2.86 0 1.59-1.29 2.88-2.88 2.88z");
+			svg.appendChild(path);
+			li.appendChild(svg);
+		} else {
+			console.log('unknown node type', node.type);
+		}
+
+		const span = document.createElement('span');
+		span.classList.add('text-sm', 'font-medium');
+		span.textContent = node.value;
+		li.appendChild(span);
+		const button = document.createElement('button');
+		button.type = 'button';
+		button.classList.add('inline-flex', 'items-center', 'justify-center', 'rounded-md', 'text-sm', 'font-medium', 'ring-offset-background', 'transition-colors', 'focus-visible:outline-none', 'focus-visible:ring-2', 'focus-visible:ring-ring', 'focus-visible:ring-offset-2', 'disabled:pointer-events-none', 'disabled:opacity-50', 'border', 'bg-background', 'hover:bg-accent', 'hover:text-accent-foreground', 'h-6', 'px-2', 'py-1', 'text-gray-300', 'border-gray-500');
+		button.onclick = () => unfilterNode(node.value);
+		button.appendChild(createXSvg());
+		li.appendChild(button);
+		filteredList.appendChild(li);
+	});
+}
+
+function createXSvg() {
+	const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+	svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+	svg.setAttribute('width', '24');
+	svg.setAttribute('height', '24');
+	svg.setAttribute('viewBox', '0 0 24 24');
+	svg.setAttribute('fill', 'none');
+	svg.setAttribute('stroke', 'currentColor');
+	svg.setAttribute('stroke-width', '2');
+	svg.setAttribute('stroke-linecap', 'round');
+	svg.setAttribute('stroke-linejoin', 'round');
+	svg.classList.add('h-4', 'w-4');
+	svg.setAttribute('aria-hidden', 'true');
+	const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+	path.setAttribute('d', 'M6 18L18 6M6 6l12 12');
+	svg.appendChild(path);
+	return svg;
+}
+
+function hideNode() {
+	if (!global.focused) {
+		console.log('no global.focused node');
+		return;
+	}
+
+	global.hidden.push(global.focused.name);
+	unfocus();
+	renderHidden();
+	renderGraph(global.currentGraph).catch(console.error);
+}
+
+function findNode(node, name) {
+	if (node.name === name) {
+		return node;
+	}
+	if (node.deps) {
+		for (let i = 0; i < node.deps.length; i++) {
+			const found = findNode(node.deps[i], name);
+			if (found) {
+				return found;
+			}
+		}
+	}
+	return null;
+}
+
+async function hideChildrenOfNode() {
+	if (!global.focused) {
+		return;
+	}
+
+	findNode(global.baseGraph, global.focused.name).deps.forEach(function(dep) {
+		global.hidden.push(dep.name);
+	});
+
+	renderHidden();
+	await renderGraph(global.currentGraph).catch(console.error);
+}
+
+async function focusNode() {
+	if (!global.focused) {
+		return;
+	}
+
+	global.focusedView = global.focused.name;
+	updateUrl();
+
+	graph = JSON.parse(JSON.stringify(global.baseGraph));
+	trimToUsed(graph, global.focused);
+	await renderGraph(graph).catch(console.error);
+}
+
+function searchFunction(text) {
+	global.searchText = text;
+	unhighlightSearch();
+	if (text === '' || text === null) {
+		hideSearchCounter();
+		return;
+	}
+	unfocus();
+
+	global.matches = [];
+
+	global.currentJointJSGraph.getElements().forEach(function(element) {
+		if (element.name.toLowerCase().includes(text.toLowerCase())) {
+			global.matches.push(element);
+		}
+	});
+
+	global.currentMatch = 0;
+	if (global.matches.length === 0) {
+		hideSearchCounter();
+		return;
+	}
+	searchHighlight();
+	updateSearchCounter();
+	focus(global.matches[0]);
+	updateUrl();
+}
+
+function nextSearchResult() {
+	if (global.matches.length === 0) {
+		return;
+	}
+	unfocus();
+	unhighlightSearch();
+	global.currentMatch++;
+	if (global.currentMatch >= global.matches.length) {
+		global.currentMatch = 0;
+	}
+	searchHighlight();
+	updateSearchCounter();
+	element = global.matches[global.currentMatch];
+	focus(element);
+	updateUrl();
+}
+
+function previousSearchResult() {
+	if (global.matches.length === 0) {
+		return;
+	}
+	unfocus();
+	unhighlightSearch();
+	global.currentMatch--;
+	if (global.currentMatch < 0) {
+		global.currentMatch = global.matches.length - 1;
+	}
+	searchHighlight();
+	updateSearchCounter();
+	focus(global.matches[global.currentMatch]);
+	updateUrl();
+}
+
+function hideSearchCounter() {
+	const counter = document.getElementById('resultCount');
+	counter.style.display = 'none';
+}
+
+function updateSearchCounter() {
+	const counter = document.getElementById('resultCount');
+	counter.textContent = `${global.currentMatch + 1}/${global.matches.length}`;
+	counter.style.display = 'block';
+}
+
+function unhighlightSearch() {
+	global.matches.forEach(function(element) {
+		element.attr({
+			body: {
+				stroke: 'none', // Set the border color
+			},
+		});
+	});
+}
+
+function searchHighlight() {
+	global.matches.forEach(function(element) {
+		element.attr({
+			body: {
+				stroke: '#4CAF50', // Set the border color
+			},
+		});
+	});
+}
+
+async function focusView(){
+	focused = global.focused;
+	global.focused = {name: global.focusedView};
+	if (global.focused) {
+		await	focusNode();
+		unfocus();
+	} else {
+		await renderGraph(global.baseGraph).catch(console.error);
+	}
+	global.focused = focused;
+}
+
+function fillSearch() {
+	const text = global.searchText;
+	if (!text) {
+		return;
+	}
+	const search = document.getElementById('searchBox');
+	search.value = text;
+}
+
+async function init() {
+	loadGlobalFromUrl();
+	renderHidden();
+	renderFiltered();
+	fillSearch();
+	if (global.focusedView && global.focusedView !== 'root'){
+		await focusView()
+	} else {
+		await renderGraph(global.baseGraph).catch(console.error);
+	}
+	if (!global.focused) {
+		return;
+	}
+	global.currentJointJSGraph.getElements().forEach(function(element) {
+		if (element.name === global.focused.name) {
+			focus(element);
+		}
+	});
+}
+
+init();
+
+allButtons.forEach(applyGrayOut);
+
+</script>
+		</div>
+	</div>
+</div>
+<div id="tooltip" class="tooltip absolute bg-white p-2 border rounded shadow-md hidden">tooltip</div>
+</body>
+</html>

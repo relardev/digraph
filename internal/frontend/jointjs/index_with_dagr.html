@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title> Dependency Inversion Visualization</title>
+		<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+<div class="h-screen flex flex-col lg:flex-row bg-gray-900">
+	<div class="lg:w-1/3 p-4 flex flex-col h-full border-r border-gray-700">
+		<h2 class="text-2xl font-bold mb-4 text-green-400">Graph Exploration Tool</h2>
+		<div class="flex-1 overflow-auto">
+			<h3 class="text-xl font-semibold mb-2 text-blue-400">Node Controls</h3>
+			<button class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 w-full mb-2 text-gray-300 border-gray-500">
+				Focus Node
+			</button>
+			<div class="mb-2">
+				<h4 class="text-lg font-semibold mb-2 text-yellow-500">Filter Nodes</h4>
+				<button
+					type="button"
+					role="combobox"
+					aria-controls="radix-:R4sulllla:"
+					aria-expanded="false"
+					aria-autocomplete="none"
+					dir="ltr"
+					data-state="closed"
+					data-placeholder=""
+					class="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+				>
+					<span style="pointer-events:none">Select nodes</span>
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						width="24"
+						height="24"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						class="h-4 w-4 opacity-50"
+						aria-hidden="true"
+					>
+						<path d="m6 9 6 6 6-6"></path>
+					</svg>
+				</button>
+			</div>
+			<h3 class="text-xl font-semibold mb-2 text-blue-400">Graph Roots</h3>
+			<div class="mb-2">
+				<button
+					type="button"
+					role="combobox"
+					aria-controls="radix-:R3culllla:"
+					aria-expanded="false"
+					aria-autocomplete="none"
+					dir="ltr"
+					data-state="closed"
+					data-placeholder=""
+					class="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+				>
+					<span style="pointer-events:none">Select a root</span>
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						width="24"
+						height="24"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						class="h-4 w-4 opacity-50"
+						aria-hidden="true"
+					>
+						<path d="m6 9 6 6 6-6"></path>
+					</svg>
+				</button>
+				<button class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 w-full mt-2 text-gray-300 border-gray-500">
+					Show All Roots
+				</button>
+			</div>
+		</div>
+		<div class="mt-4">
+			<h3 class="text-xl font-semibold mb-2 text-blue-400">Search</h3>
+			<div class="relative">
+				<svg
+					xmlns="http://www.w3.org/2000/svg"
+					width="24"
+					height="24"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					class=" absolute left-2.5 top-2.5 h-4 w-4 text-gray-500"
+				>
+					<circle cx="11" cy="11" r="8"></circle>
+					<path d="m21 21-4.3-4.3"></path>
+				</svg>
+				<input
+					type="search"
+					class="flex h-10 rounded-md px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full appearance-none pl-8 text-gray-300 bg-gray-800 border border-gray-700"
+					placeholder="Search nodes or edges..."
+				/>
+			</div>
+		</div>
+	</div>
+	<div class="flex-1 p-4 relative bg-gray-800">
+		<h3 class="text-xl font-semibold mb-2 text-blue-400">Graph Visualization</h3>
+		<div class="w-full h-full rounded-lg border border-gray-700 border-dashed" id="holder">
+		<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/jointjs/3.7.5/joint.css" />
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.4/jquery.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/backbone.js/1.4.1/backbone.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jointjs/3.7.5/joint.js"></script>
+
+		<script src=" https://cdn.jsdelivr.net/npm/dagre@0.8.5/dist/dagre.min.js "></script>
+
+		<script src=" https://cdn.jsdelivr.net/npm/graphlib@2.1.8/dist/graphlib.min.js "></script>
+
+		<script>
+let graphData = {"name":"","deps":[{"name":"Processor","deps":[{"name":"measured.NewPreProcessor","deps":[{"name":"preprocessor.NewPreprocessor","deps":[{"name":"external.New","deps":[{"name":"external.ExtractAcIDForPX"},{"name":"external.FromPath"}]},{"name":"measured.NewProcessor","deps":[{"name":"cacheProcessor.New","deps":[{"name":"measured.NewSchemaRepo","deps":[{"name":"schema.NewRepo","deps":[{"name":"schemaClient.NewSchemaServiceClient","deps":[{"name":"grpc.Dial","deps":[{"name":"cfg.CoreAPI.Host","value":"core-api.default.svc.cluster.local:9000"},{"name":"grpc.WithTransportCredentials","deps":[{"name":"insecure.NewCredentials"}]},{"name":"grpc.WithUnaryInterceptor","deps":[{"name":"prometheus.UnaryInterceptor"}]}]}]}]}]},{"name":"measured.NewTimeProcessor","deps":[{"name":"exampleevent.NewProcessor","deps":[{"name":"message.NewProcessor","deps":[{"name":"trigger.NewSelector","deps":[{"name":"measured.NewRecipeRepo","deps":[{"name":"cache.New","deps":[{"name":"recipe.NewRecipeClient","deps":[{"name":"grpc.Dial","deps":[{"name":"cfg.CoreAPI.Host","value":"core-api.default.svc.cluster.local:9000"},{"name":"grpc.WithTransportCredentials","deps":[{"name":"insecure.NewCredentials"}]},{"name":"grpc.WithUnaryInterceptor","deps":[{"name":"prometheus.UnaryInterceptor"}]}]}]},{"name":"cfg.Meta.Application","value":"px"},{"name":"cfg.GetCacheRecipesTime"},{"name":"cfg.GetCacheRecipesCleanupTime"}]}]},{"name":"cfg.Meta.ScenarioType","value":"px"}]},{"name":"measured.NewSingleProcessor","deps":[{"name":"single.NewProcessor","deps":[{"name":"readerfactory.New","deps":[{"name":"","deps":[{"name":"\"MAP\"","deps":[{"name":"dict.NewReaderFactory"}]},{"name":"\"EVENT\"","deps":[{"name":"eventReader.NewReaderFactory"}]},{"name":"\"SEGMENT\"","deps":[{"name":"segmentReader.NewReaderFactory","deps":[{"name":"segment.NewSegmentServiceClient","deps":[{"name":"grpc.Dial","deps":[{"name":"cfg.CoreAPI.Host","value":"core-api.default.svc.cluster.local:9000"},{"name":"grpc.WithTransportCredentials","deps":[{"name":"insecure.NewCredentials"}]},{"name":"grpc.WithUnaryInterceptor","deps":[{"name":"prometheus.UnaryInterceptor"}]}]}]},{"name":"dp.NewDigitalProfileServiceClient","deps":[{"name":"grpc.Dial","deps":[{"name":"cfg.CoreAPI.Host","value":"core-api.default.svc.cluster.local:9000"},{"name":"grpc.WithTransportCredentials","deps":[{"name":"insecure.NewCredentials"}]},{"name":"grpc.WithUnaryInterceptor","deps":[{"name":"prometheus.UnaryInterceptor"}]}]}]}]}]},{"name":"\"PROFILE\"","deps":[{"name":"profile.NewReaderFactory","deps":[{"name":"grpc.Dial","deps":[{"name":"cfg.CoreAPI.Host","value":"core-api.default.svc.cluster.local:9000"},{"name":"grpc.WithTransportCredentials","deps":[{"name":"insecure.NewCredentials"}]},{"name":"grpc.WithUnaryInterceptor","deps":[{"name":"prometheus.UnaryInterceptor"}]}]}]}]}]}]},{"name":"delaythrottle.NewRepository","deps":[{"name":"delayedData.NewRepository","deps":[{"name":"collection.NewProvider","deps":[{"name":"mongoPkg.NewClient","deps":[{"name":"strings.ReplaceAll","deps":[{"name":"cfg.Delay.Mongo.ConnectionString","value":"mongodb://srv_cdp:{{PASSWORD}}@mongo-45-1.cdp.dc-2.dev.dcwp.pl:27071,mongo-45-2.cdp.dc-2.dev.dcwp.pl:27071,mongo-45-3.cdp.dc-2.dev.dcwp.pl:27071/?replicaSet=cdp\u0026readPreference=primary\u0026serverSelectionTimeoutMS=5000\u0026connectTimeoutMS=10000\u0026authSource=admin\u0026authMechanism=SCRAM-SHA-256"},{"name":"cfg.Delay.Mongo.Password"}]},{"name":"cfg.GetMongoTimeout"}]},{"name":"cfg.Delay.Mongo.DB","value":"delay"},{"name":"cfg.Delay.Mongo.DelayedDataCollection","value":"data"},{"name":"cfg.GetMongoTimeout"}]},{"name":"collection.NewProvider","deps":[{"name":"mongoPkg.NewClient","deps":[{"name":"strings.ReplaceAll","deps":[{"name":"cfg.Delay.Mongo.ConnectionString","value":"mongodb://srv_cdp:{{PASSWORD}}@mongo-45-1.cdp.dc-2.dev.dcwp.pl:27071,mongo-45-2.cdp.dc-2.dev.dcwp.pl:27071,mongo-45-3.cdp.dc-2.dev.dcwp.pl:27071/?replicaSet=cdp\u0026readPreference=primary\u0026serverSelectionTimeoutMS=5000\u0026connectTimeoutMS=10000\u0026authSource=admin\u0026authMechanism=SCRAM-SHA-256"},{"name":"cfg.Delay.Mongo.Password"}]},{"name":"cfg.GetMongoTimeout"}]},{"name":"cfg.Delay.Mongo.DB","value":"delay"},{"name":"cfg.Delay.Mongo.RunTimeStateCollection","value":"runtime_state"},{"name":"cfg.GetMongoTimeout"}]},{"name":"time.Now"},{"name":"","deps":[{"name":"\"PROFILE\"","deps":[{"name":"profile.Deserialize"}]},{"name":"\"DICT\"","deps":[{"name":"dict.Deserialize"}]},{"name":"\"EVENT\"","deps":[{"name":"eventReader.Deserialize"}]},{"name":"\"SEGMENT\"","deps":[{"name":"segmentReader.Deserialize","deps":[{"name":"segment.NewSegmentServiceClient","deps":[{"name":"grpc.Dial","deps":[{"name":"cfg.CoreAPI.Host","value":"core-api.default.svc.cluster.local:9000"},{"name":"grpc.WithTransportCredentials","deps":[{"name":"insecure.NewCredentials"}]},{"name":"grpc.WithUnaryInterceptor","deps":[{"name":"prometheus.UnaryInterceptor"}]}]}]},{"name":"dp.NewDigitalProfileServiceClient","deps":[{"name":"grpc.Dial","deps":[{"name":"cfg.CoreAPI.Host","value":"core-api.default.svc.cluster.local:9000"},{"name":"grpc.WithTransportCredentials","deps":[{"name":"insecure.NewCredentials"}]},{"name":"grpc.WithUnaryInterceptor","deps":[{"name":"prometheus.UnaryInterceptor"}]}]}]}]}]}]},{"name":"","deps":[{"name":"\"PROFILE\"","deps":[{"name":"profile2.Deserialize","deps":[{"name":"measured.NewQueue","deps":[{"name":"throttle.NewQueue","deps":[{"name":"concurrent.NewQueue","deps":[{"name":"append","deps":[{"name":"rabbit.NewConnection","deps":[{"name":"","deps":[{"name":"Host","deps":[{"name":"strings.Split","deps":[{"name":"cfg.Rabbit.Host","value":"node-1.rabbitmq-1.dc-2.dev.dcwp.pl"}]}]},{"name":"User","deps":[{"name":"cfg.Rabbit.User","value":"cdp"}]},{"name":"Pass","deps":[{"name":"cfg.Rabbit.Password"}]},{"name":"VHost","deps":[{"name":"cfg.Rabbit.Vhost","value":"CDP"}]},{"name":"QueueName","deps":[{"name":"cfg.Rabbit.QueueName","value":"attrChange"}]},{"name":"DlqName","deps":[{"name":"cfg.Rabbit.DlqName","value":"attrChangeDLQ"}]},{"name":"ContentType"}]}]}]}]},{"name":"strings.Split","deps":[{"name":"cfg.AlwaysWriteACIDs","value":"257c138f-ac95-425e-b629-7e28720ba17e,3b75dd46-1dce-46eb-b701-af400da7583d,474283bf-baf0-436e-b7d4-1219c0d22319"}]}]}]}]}]},{"name":"\"CONSOLE\"","deps":[{"name":"consoleWriter.Deserialize"}]}]}]},{"name":"strings.Split","deps":[{"name":"cfg.AlwaysWriteACIDs","value":"257c138f-ac95-425e-b629-7e28720ba17e,3b75dd46-1dce-46eb-b701-af400da7583d,474283bf-baf0-436e-b7d4-1219c0d22319"}]}]},{"name":"cacheScenario.NewRepository","deps":[{"name":"collection.NewProvider","deps":[{"name":"mongoPkg.NewClient","deps":[{"name":"strings.ReplaceAll","deps":[{"name":"cfg.Delay.Mongo.ConnectionString","value":"mongodb://srv_cdp:{{PASSWORD}}@mongo-45-1.cdp.dc-2.dev.dcwp.pl:27071,mongo-45-2.cdp.dc-2.dev.dcwp.pl:27071,mongo-45-3.cdp.dc-2.dev.dcwp.pl:27071/?replicaSet=cdp\u0026readPreference=primary\u0026serverSelectionTimeoutMS=5000\u0026connectTimeoutMS=10000\u0026authSource=admin\u0026authMechanism=SCRAM-SHA-256"},{"name":"cfg.Delay.Mongo.Password"}]},{"name":"cfg.GetMongoTimeout"}]},{"name":"cfg.Delay.Mongo.DB","value":"delay"},{"name":"cfg.Delay.Mongo.RecipeCollection","value":"recipes"},{"name":"cfg.GetMongoTimeout"}]}]}]}]},{"name":"writerfactory.New","deps":[{"name":"","deps":[{"name":"\"CONSOLE\"","deps":[{"name":"consoleWriter.NewWriterFactory"}]},{"name":"\"PROFILE\"","deps":[{"name":"profile2.NewWriterFactory","deps":[{"name":"measured.NewQueue","deps":[{"name":"throttle.NewQueue","deps":[{"name":"concurrent.NewQueue","deps":[{"name":"append","deps":[{"name":"rabbit.NewConnection","deps":[{"name":"","deps":[{"name":"Host","deps":[{"name":"strings.Split","deps":[{"name":"cfg.Rabbit.Host","value":"node-1.rabbitmq-1.dc-2.dev.dcwp.pl"}]}]},{"name":"User","deps":[{"name":"cfg.Rabbit.User","value":"cdp"}]},{"name":"Pass","deps":[{"name":"cfg.Rabbit.Password"}]},{"name":"VHost","deps":[{"name":"cfg.Rabbit.Vhost","value":"CDP"}]},{"name":"QueueName","deps":[{"name":"cfg.Rabbit.QueueName","value":"attrChange"}]},{"name":"DlqName","deps":[{"name":"cfg.Rabbit.DlqName","value":"attrChangeDLQ"}]},{"name":"ContentType"}]}]}]}]},{"name":"strings.Split","deps":[{"name":"cfg.AlwaysWriteACIDs","value":"257c138f-ac95-425e-b629-7e28720ba17e,3b75dd46-1dce-46eb-b701-af400da7583d,474283bf-baf0-436e-b7d4-1219c0d22319"}]}]}]}]}]}]}]}]}]}]},{"name":"cfg.GetCacheCdpIDsTime"},{"name":"cfg.GetCacheCdpIDsCleanupTime"}]}]}]}]}]},{"name":"Closer","deps":[{"name":"append","deps":[{"name":"append","deps":[{"name":"grpc.Dial","deps":[{"name":"cfg.CoreAPI.Host","value":"core-api.default.svc.cluster.local:9000"},{"name":"grpc.WithTransportCredentials","deps":[{"name":"insecure.NewCredentials"}]},{"name":"grpc.WithUnaryInterceptor","deps":[{"name":"prometheus.UnaryInterceptor"}]}]}]},{"name":"measured.NewQueue","deps":[{"name":"throttle.NewQueue","deps":[{"name":"concurrent.NewQueue","deps":[{"name":"append","deps":[{"name":"rabbit.NewConnection","deps":[{"name":"","deps":[{"name":"Host","deps":[{"name":"strings.Split","deps":[{"name":"cfg.Rabbit.Host","value":"node-1.rabbitmq-1.dc-2.dev.dcwp.pl"}]}]},{"name":"User","deps":[{"name":"cfg.Rabbit.User","value":"cdp"}]},{"name":"Pass","deps":[{"name":"cfg.Rabbit.Password"}]},{"name":"VHost","deps":[{"name":"cfg.Rabbit.Vhost","value":"CDP"}]},{"name":"QueueName","deps":[{"name":"cfg.Rabbit.QueueName","value":"attrChange"}]},{"name":"DlqName","deps":[{"name":"cfg.Rabbit.DlqName","value":"attrChangeDLQ"}]},{"name":"ContentType"}]}]}]}]},{"name":"strings.Split","deps":[{"name":"cfg.AlwaysWriteACIDs","value":"257c138f-ac95-425e-b629-7e28720ba17e,3b75dd46-1dce-46eb-b701-af400da7583d,474283bf-baf0-436e-b7d4-1219c0d22319"}]}]}]}]}]},{"name":"ExampleEvent","deps":[{"name":"exampleEventProcessor.Event"}]},{"name":"RecipeRepository","deps":[{"name":"measured.NewRecipeRepo","deps":[{"name":"cache.New","deps":[{"name":"recipe.NewRecipeClient","deps":[{"name":"grpc.Dial","deps":[{"name":"cfg.CoreAPI.Host","value":"core-api.default.svc.cluster.local:9000"},{"name":"grpc.WithTransportCredentials","deps":[{"name":"insecure.NewCredentials"}]},{"name":"grpc.WithUnaryInterceptor","deps":[{"name":"prometheus.UnaryInterceptor"}]}]}]},{"name":"cfg.Meta.Application","value":"px"},{"name":"cfg.GetCacheRecipesTime"},{"name":"cfg.GetCacheRecipesCleanupTime"}]}]}]}]};
+let elements = [];
+
+let id = 0;
+
+var MD5 = function(d){var r = M(V(Y(X(d),8*d.length)));return r.toLowerCase()};function M(d){for(var _,m="0123456789ABCDEF",f="",r=0;r<d.length;r++)_=d.charCodeAt(r),f+=m.charAt(_>>>4&15)+m.charAt(15&_);return f}function X(d){for(var _=Array(d.length>>2),m=0;m<_.length;m++)_[m]=0;for(m=0;m<8*d.length;m+=8)_[m>>5]|=(255&d.charCodeAt(m/8))<<m%32;return _}function V(d){for(var _="",m=0;m<32*d.length;m+=8)_+=String.fromCharCode(d[m>>5]>>>m%32&255);return _}function Y(d,_){d[_>>5]|=128<<_%32,d[14+(_+64>>>9<<4)]=_;for(var m=1732584193,f=-271733879,r=-1732584194,i=271733878,n=0;n<d.length;n+=16){var h=m,t=f,g=r,e=i;f=md5_ii(f=md5_ii(f=md5_ii(f=md5_ii(f=md5_hh(f=md5_hh(f=md5_hh(f=md5_hh(f=md5_gg(f=md5_gg(f=md5_gg(f=md5_gg(f=md5_ff(f=md5_ff(f=md5_ff(f=md5_ff(f,r=md5_ff(r,i=md5_ff(i,m=md5_ff(m,f,r,i,d[n+0],7,-680876936),f,r,d[n+1],12,-389564586),m,f,d[n+2],17,606105819),i,m,d[n+3],22,-1044525330),r=md5_ff(r,i=md5_ff(i,m=md5_ff(m,f,r,i,d[n+4],7,-176418897),f,r,d[n+5],12,1200080426),m,f,d[n+6],17,-1473231341),i,m,d[n+7],22,-45705983),r=md5_ff(r,i=md5_ff(i,m=md5_ff(m,f,r,i,d[n+8],7,1770035416),f,r,d[n+9],12,-1958414417),m,f,d[n+10],17,-42063),i,m,d[n+11],22,-1990404162),r=md5_ff(r,i=md5_ff(i,m=md5_ff(m,f,r,i,d[n+12],7,1804603682),f,r,d[n+13],12,-40341101),m,f,d[n+14],17,-1502002290),i,m,d[n+15],22,1236535329),r=md5_gg(r,i=md5_gg(i,m=md5_gg(m,f,r,i,d[n+1],5,-165796510),f,r,d[n+6],9,-1069501632),m,f,d[n+11],14,643717713),i,m,d[n+0],20,-373897302),r=md5_gg(r,i=md5_gg(i,m=md5_gg(m,f,r,i,d[n+5],5,-701558691),f,r,d[n+10],9,38016083),m,f,d[n+15],14,-660478335),i,m,d[n+4],20,-405537848),r=md5_gg(r,i=md5_gg(i,m=md5_gg(m,f,r,i,d[n+9],5,568446438),f,r,d[n+14],9,-1019803690),m,f,d[n+3],14,-187363961),i,m,d[n+8],20,1163531501),r=md5_gg(r,i=md5_gg(i,m=md5_gg(m,f,r,i,d[n+13],5,-1444681467),f,r,d[n+2],9,-51403784),m,f,d[n+7],14,1735328473),i,m,d[n+12],20,-1926607734),r=md5_hh(r,i=md5_hh(i,m=md5_hh(m,f,r,i,d[n+5],4,-378558),f,r,d[n+8],11,-2022574463),m,f,d[n+11],16,1839030562),i,m,d[n+14],23,-35309556),r=md5_hh(r,i=md5_hh(i,m=md5_hh(m,f,r,i,d[n+1],4,-1530992060),f,r,d[n+4],11,1272893353),m,f,d[n+7],16,-155497632),i,m,d[n+10],23,-1094730640),r=md5_hh(r,i=md5_hh(i,m=md5_hh(m,f,r,i,d[n+13],4,681279174),f,r,d[n+0],11,-358537222),m,f,d[n+3],16,-722521979),i,m,d[n+6],23,76029189),r=md5_hh(r,i=md5_hh(i,m=md5_hh(m,f,r,i,d[n+9],4,-640364487),f,r,d[n+12],11,-421815835),m,f,d[n+15],16,530742520),i,m,d[n+2],23,-995338651),r=md5_ii(r,i=md5_ii(i,m=md5_ii(m,f,r,i,d[n+0],6,-198630844),f,r,d[n+7],10,1126891415),m,f,d[n+14],15,-1416354905),i,m,d[n+5],21,-57434055),r=md5_ii(r,i=md5_ii(i,m=md5_ii(m,f,r,i,d[n+12],6,1700485571),f,r,d[n+3],10,-1894986606),m,f,d[n+10],15,-1051523),i,m,d[n+1],21,-2054922799),r=md5_ii(r,i=md5_ii(i,m=md5_ii(m,f,r,i,d[n+8],6,1873313359),f,r,d[n+15],10,-30611744),m,f,d[n+6],15,-1560198380),i,m,d[n+13],21,1309151649),r=md5_ii(r,i=md5_ii(i,m=md5_ii(m,f,r,i,d[n+4],6,-145523070),f,r,d[n+11],10,-1120210379),m,f,d[n+2],15,718787259),i,m,d[n+9],21,-343485551),m=safe_add(m,h),f=safe_add(f,t),r=safe_add(r,g),i=safe_add(i,e)}return Array(m,f,r,i)}function md5_cmn(d,_,m,f,r,i){return safe_add(bit_rol(safe_add(safe_add(_,d),safe_add(f,i)),r),m)}function md5_ff(d,_,m,f,r,i,n){return md5_cmn(_&m|~_&f,d,_,r,i,n)}function md5_gg(d,_,m,f,r,i,n){return md5_cmn(_&f|m&~f,d,_,r,i,n)}function md5_hh(d,_,m,f,r,i,n){return md5_cmn(_^m^f,d,_,r,i,n)}function md5_ii(d,_,m,f,r,i,n){return md5_cmn(m^(_|~f),d,_,r,i,n)}function safe_add(d,_){var m=(65535&d)+(65535&_);return(d>>16)+(_>>16)+(m>>16)<<16|65535&m}function bit_rol(d,_){return d<<_|d>>>32-_}
+
+function fillHashes(node){
+	stringRep = JSON.stringify(node)
+	md5 = MD5(stringRep)
+	node.md5 = md5;
+	if (node.deps) {
+		node.deps.forEach(d => {
+			fillHashes(d);
+		});
+	}
+}
+
+fillHashes(graphData)
+
+seen = {}
+id2node = {}
+var graph = new joint.dia.Graph({}, { cellNamespace: namespace });
+
+var g = new dagre.graphlib.Graph();
+
+g.setGraph({});
+
+// Default to assigning a new object as a label for each new edge.
+g.setDefaultEdgeLabel(function() { return {}; });
+
+function processDependency(dep, parentID=null) {
+	seenNode = seen[dep.md5];
+	if (seenNode) {
+		if (parentID) {
+			console.log('seen', dep.name, 'from', parentID, 'to', seenNode.id)
+			parent = id2node[parentID];
+			if (parent) {
+				g.setEdge(parentID, seenNode.id)
+			} else {
+				console.log('no parent', parentID)
+			}
+		}
+		return;
+	}
+	let myID = id;
+	id++;
+
+	dep.id = myID;
+	seen[dep.md5] = dep;
+
+	g.setNode(myID, { 
+		label: dep.name + (dep.value ? ` (${dep.value})` : ''),
+		width: 100,
+		height: 40
+	})
+
+	id2node[myID] = dep;
+
+	if (parentID) {
+		parent = id2node[parentID];
+		if (parent) {
+				g.setEdge(parentID, dep.id)
+		} else {
+			console.log('no parent', parentID)
+		}
+	}
+
+	if (dep.deps) {
+		dep.deps.forEach(d => {
+			processDependency(d, myID);
+		});
+	}
+}
+
+processDependency(graphData);
+
+var layoutOpts = {
+	rankdir: 'TB',
+	ranksep: 100,
+	nodesep: 100,
+	marginx: 100,
+	marginy: 100
+}
+
+dagre.layout(g, layoutOpts);
+
+function noopRouter(vertices, args, linkView){
+	return vertices;
+}
+
+function createJointGraph() {
+	id2node = {}
+	g.nodes().forEach(function(v) {
+		node = g.node(v);
+		rect = new joint.shapes.standard.Rectangle();
+		id2node[v] = rect;
+		rect.resize(100, 40);
+		rect.position(node.x, node.y);
+		rect.attr({
+			body: {
+				fill: 'blue'
+			},
+			label: {
+				text: node.label,
+				fill: 'white'
+			}
+		});
+		rect.addTo(graph);
+	});
+	g.edges().forEach(function(e) {
+		console.log("Edge " + e.v + " -> " + e.w + ": " + JSON.stringify(g.edge(e)));
+		link = new joint.shapes.standard.Link();
+		link.source(id2node[e.v]);
+		link.target(id2node[e.w]);
+		link.vertices(g.edge(e).points);
+		link.router = noopRouter;
+		link.addTo(graph);
+	});
+}
+
+createJointGraph();
+
+var namespace = joint.shapes;
+
+holder = document.getElementById('holder');
+
+var paper = new joint.dia.Paper({
+	el: holder,
+	model: graph,
+	width: holder.clientWidth,
+	height: holder.clientHeight,
+	gridSize: 1,
+	cellViewNamespace: namespace
+});
+
+ // Implement paper panning
+  var offsetX = 0;
+  var offsetY = 0;
+  var isPanning = false;
+
+  holder.addEventListener('mousedown', function (e) {
+    isPanning = true;
+		offsetX = e.clientX - paper.options.origin.x;
+    offsetY = e.clientY - paper.options.origin.y;
+		console.log(offsetX, offsetY)
+  });
+
+  holder.addEventListener('mousemove', function (e) {
+    if (isPanning) {
+      var x = e.clientX - offsetX;
+      var y = e.clientY - offsetY;
+			console.log(x, y)
+      paper.translate(x, y);
+    }
+  });
+
+  holder.addEventListener('mouseup', function () {
+    isPanning = false;
+  });
+
+</script>
+		</div>
+	</div>
+</div>
+
+</body>
+</html>

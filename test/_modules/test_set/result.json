@@ -1,0 +1,24 @@
+{
+  "name": "Aggregate",
+  "deps": [
+    {
+      "name": "s.Processor",
+      "deps": [
+        {
+          "name": "processor.New",
+          "deps": [
+            {
+              "name": "common.NewComponent",
+              "deps": [
+                {
+                  "name": "cfg.Addr",
+                  "value": "http://localhost:8080"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

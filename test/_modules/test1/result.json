@@ -1,0 +1,93 @@
+{
+  "deps": [
+    {
+      "deps": [
+        {
+          "deps": [
+            {
+              "deps": [
+                {
+                  "deps": [
+                    {
+                      "deps": [
+                        {
+                          "deps": [
+                            {
+                              "deps": [
+                                {
+                                  "deps": [
+                                    {
+                                      "name": "cfg.Mongo.ConnectionString",
+                                      "value": "mongodb://localhost:27017/test"
+                                    },
+                                    {
+                                      "name": "\"{{PASSWORD}}\""
+                                    },
+                                    {
+                                      "name": "cfg.Mongo.Password",
+                                      "value": ""
+                                    }
+                                  ],
+                                  "name": "strings.ReplaceAll"
+                                },
+                                {
+                                  "name": "cfg.GetMongoTimeout",
+                                  "value": "cfg.GetMongoTimeout (error: var error: object has no member \"GetMongoTimeout\")"
+                                }
+                              ],
+                              "name": "pkgmongo.NewClient"
+                            }
+                          ],
+                          "name": "repo.NewRepo"
+                        }
+                      ],
+                      "name": "getstate.NewHandler"
+                    }
+                  ],
+                  "name": "gethandler"
+                }
+              ],
+              "name": "\"endpoint1\""
+            }
+          ],
+          "name": ""
+        }
+      ],
+      "name": "GETs"
+    },
+    {
+      "deps": [
+        {
+          "deps": [
+            {
+              "deps": [
+                {
+                  "deps": [
+                    {
+                      "deps": [
+                        {
+                          "name": "cfg.Test.DDD",
+                          "value": "cfg.Test.DDD (error: var error: object has no member \"Test\")"
+                        }
+                      ],
+                      "name": "upload.NewHandler"
+                    },
+                    {
+                      "name": "cfg.Mongo.CCCC",
+                      "value": "cfg.Mongo.CCCC (error: var error: object has no member \"CCCC\")"
+                    }
+                  ],
+                  "name": ".Handle"
+                }
+              ],
+              "name": "\"endpoint2\""
+            }
+          ],
+          "name": ""
+        }
+      ],
+      "name": "POSTs"
+    }
+  ],
+  "name": ""
+}

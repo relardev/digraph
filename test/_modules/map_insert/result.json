@@ -1,0 +1,84 @@
+{
+  "name": "base.New",
+  "deps": [
+    {
+      "name": "",
+      "deps": [
+        {
+          "name": "\"/123\"",
+          "deps": [
+            {
+              "name": "common.NewCommon"
+            }
+          ]
+        },
+        {
+          "name": "\"/\"",
+          "deps": [
+            {
+              "name": "common.New"
+            }
+          ]
+        },
+        {
+          "name": "\"/health\"",
+          "deps": [
+            {
+              "name": "another.New"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "",
+      "deps": [
+        {
+          "name": "\"555\"",
+          "deps": [
+            {
+              "name": "\"123\""
+            }
+          ]
+        },
+        {
+          "name": "\"666\"",
+          "deps": [
+            {
+              "name": "\"12345\""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "",
+      "deps": [
+        {
+          "name": "1",
+          "deps": [
+            {
+              "name": "9"
+            }
+          ]
+        },
+        {
+          "name": "2",
+          "deps": [
+            {
+              "name": "8"
+            }
+          ]
+        },
+        {
+          "name": "3",
+          "deps": [
+            {
+              "name": "7"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

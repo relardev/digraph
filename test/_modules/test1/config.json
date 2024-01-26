@@ -1,0 +1,7 @@
+{
+  "Mongo": {
+    "ConnectionString": "mongodb://localhost:27017/test",
+    "Timeout": "30s",
+    "Password": ""
+  }
+}

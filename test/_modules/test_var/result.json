@@ -1,0 +1,66 @@
+{
+  "deps": [
+    {
+      "deps": [
+        {
+          "deps": [
+            {
+              "deps": [
+                {
+                  "name": "cfg.Timeout",
+                  "value": 45
+                }
+              ],
+              "name": "base.New"
+            },
+            {
+              "name": "\"two\""
+            }
+          ],
+          "name": "common.NewComponent"
+        }
+      ],
+      "name": "s.Comp2"
+    },
+    {
+      "deps": [
+        {
+          "deps": [
+            {
+              "name": "cfg.Timeout",
+              "value": 45
+            },
+            {
+              "name": "\"two\""
+            }
+          ],
+          "name": "another.New"
+        }
+      ],
+      "name": "s.Comp3"
+    },
+    {
+      "deps": [
+        {
+          "deps": [
+            {
+              "deps": [
+                {
+                  "name": "cfg.Timeout",
+                  "value": 45
+                }
+              ],
+              "name": "base.New"
+            },
+            {
+              "name": "\"two\""
+            }
+          ],
+          "name": "common.NewComponent"
+        }
+      ],
+      "name": "s.Comp1"
+    }
+  ],
+  "name": "Aggregate"
+}
