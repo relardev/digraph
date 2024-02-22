@@ -1012,7 +1012,7 @@ function searchFunction(text) {
 	global.matches = [];
 
 	global.currentJointJSGraph.getElements().forEach(function(element) {
-		if (element.name.toLowerCase().includes(text.toLowerCase())) {
+		if (element.tooltip.toLowerCase().includes(text.toLowerCase())) {
 			global.matches.push(element);
 		}
 	});
