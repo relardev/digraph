@@ -39,8 +39,6 @@ func Send(name, addr, tree, config string) error {
 		return fmt.Errorf("failed marshaling report, %w", err)
 	}
 
-	fmt.Println(string(serializd))
-
 	req, err := http.NewRequest(
 		"POST",
 		addr,
